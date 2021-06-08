@@ -273,17 +273,38 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install -y awscli
       - run:
           name: Run migrations
           command: |
-            # Your code here
-            exit 1
+            cd backend
+            npm i
+            npm run build
+            npm run migrations 2>&1 | tee migration-log.txt
+            
+            status_code="${PIPESTATUS[0]}"
+            if [[ ! "${status_code}" == 0 ]]; then
+              return 1
+            fi
       - run:
           name: Send migration results to memstash
           command: |
-            # Your code here
-            exit 1
+            if cat migration-log.txt | grep "has been executed successfully"; then
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+                --request PUT --data "1" \
+                https://api.memstash.io/values/migration-"${CIRCLE_WORKFLOW_ID}"
+            fi
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - backend
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
