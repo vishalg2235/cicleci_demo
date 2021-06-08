@@ -1,52 +1,25 @@
-- name: "update apt packages"
+---
+- name: "installing npm"
   become: yes
   apt:
+    name: npm
     update_cache: yes
-
-- name: "upgrade packages"
-  become: yes
-  apt:
-    upgrade: yes
-
-- name: "remove dependencies that are no longer required"
-  become: yes
-  apt:
-    autoremove: yes
-
-- name: "install python3.6"
-  become: yes
-  shell: |
-    apt-get -y install python3.6
-
-- name: "install dependencies."
-  become: yes
-  apt:
-    name: ["nodejs", "npm"]
     state: latest
-    update_cache: yes
 
-- name: "install pm2"
+- name: Install nvm
+  become: yes
+  npm:
+    name: n
+    global: yes
+
+- name: install nodejs v13.8.0
+  become: yes
+  command: n 13.8.0
+
+- name: "installing pm2"
   become: yes
   npm:
     name: pm2
     global: yes
     production: yes
     state: present
-
-- name: "create safe user 'udapeople'"
-  become: true
-  user:
-    name: udapeople
-    password: {{ upassword | password_hash('sha512') }}
-    groups:
-      - root
-    state: present
-    shell: /bin/bash
-    createhome: yes
-    home: /home/udapeople
-
-- name: "give permission to port 80"
-  become: true
-  shell: |
-    sudo apt-get install libcap2-bin
-    sudo setcap cap_net_bind_service=+ep /usr/local/bin/node

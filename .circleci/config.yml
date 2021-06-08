@@ -230,7 +230,7 @@ jobs:
             
             echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt  
             cat .circleci/ansible/inventory.txt
-      - run: yum -y install tar gzip
+      - run: yum -y install tar gzip jq
       - persist_to_workspace:
           root: .circleci/ansible
           paths:
@@ -247,18 +247,26 @@ jobs:
     docker:
       - image: python:3.7-alpine3.11
     steps:
-      #- checkout
-      #- add_ssh_keys:
-      #    fingerprints:
-      #      - "a0:f9:d1:7f:b7:8f:36:e8:8a:da:3f:03:1f:2c:e9:b1"
-      #- attach_workspace:
-      #    at: ~/
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "a0:f9:d1:7f:b7:8f:36:e8:8a:da:3f:03:1f:2c:e9:b1"
+      - attach_workspace:
+          at: /tmp/.circleci/ansible
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible aws-cli
       - run:
           name: Configure server
           command: |
             exit 1
             cd ~/project/.circleci/ansible
             ansible-playbook configure-server.yml --inventory-file=inventory.txt
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
