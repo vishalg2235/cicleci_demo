@@ -366,25 +366,36 @@ jobs:
 
   smoke-test:
     docker:
-      - image: alpine:latest
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            sudo apt update
+            sudo apt install -y awscli
+            sudo apt install -y python3 ansible
       - run:
           name: Get backend url
           command: |
-            # your code here
+            curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request GET https://api.memstash.io/values/backendurl \
+              > backend-url.txt
       - run:
           name: Backend smoke test.
           command: |
-            # your code here
+            url=$(cat backend-url.txt)
+            url="http://${url}:3030/api/status"
+            curl $url | grep "\"status\":\"ok\""
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com"
+            if curl -s ${URL} | grep "Welcome"; then
+              return 1
+            else
+              return 0
+            fi
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
