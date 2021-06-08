@@ -200,34 +200,40 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-${CIRCLECI_WORKFLOW_ID:0:7}" \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides ID="${CIRCLECI_WORKFLOW_ID:0:7}"
+              --tags project=udapeople-backend \
+              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
+
+            export BACKEND_URL=$(aws cloudformation describe-stacks \
+              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
+              --query "Stacks[0].Outputs[?OutputKey=='BackendURL'].OutputValue" \
+              --no-paginate --output text)
+
+            echo $BACKEND_URL
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request PUT --data "${BACKEND_URL}" \
+              https://api.memstash.io/values/backendurl
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLECI_WORKFLOW_ID:0:7}" \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides ID="${CIRCLECI_WORKFLOW_ID:0:7}"
+              --tags project=udapeople-frontend \
+              --stack-name frontend-"${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            BACKEND_AWS_PUBLIC_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-prod-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text)
-            echo "http://$BACKEND_AWS_PUBLIC_IP:3030" >> .circleci/outputs/backend_url.txt
-            echo "[all]" >> .circleci/ansible/inventory.txt
-            echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt
-
-            cat .circleci/outputs/backend_url.txt
+            export BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request GET https://api.memstash.io/values/backendurl)
+            
+            echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt  
+            cat .circleci/ansible/inventory.txt
+      - run: yum -y install tar gzip
       - persist_to_workspace:
-          root: ~/
+          root: .circleci/ansible
           paths:
-            - project/.circleci/outputs/backend_url.txt
-            - project/.circleci/ansible/inventory.txt
+            - inventory.txt
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
@@ -240,15 +246,16 @@ jobs:
     docker:
       - image: python:3.7-alpine3.11
     steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "a0:f9:d1:7f:b7:8f:36:e8:8a:da:3f:03:1f:2c:e9:b1"
-      - attach_workspace:
-          at: ~/
+      #- checkout
+      #- add_ssh_keys:
+      #    fingerprints:
+      #      - "a0:f9:d1:7f:b7:8f:36:e8:8a:da:3f:03:1f:2c:e9:b1"
+      #- attach_workspace:
+      #    at: ~/
       - run:
           name: Configure server
           command: |
+            exit 1
             cd ~/project/.circleci/ansible
             ansible-playbook configure-server.yml --inventory-file=inventory.txt
       # Here's where you will add some code to rollback on failure      
