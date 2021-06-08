@@ -28,10 +28,10 @@
         timeout: 600
 
     - name: "install python for Ansible."
-        become: yes
-        apt:
-          name: python3
-          state: latest
+      become: yes
+      apt:
+        name: python3
+        state: latest
 
   roles:
     - configure-server
