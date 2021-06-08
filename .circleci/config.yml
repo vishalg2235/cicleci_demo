@@ -264,13 +264,8 @@ jobs:
       - run:
           name: Configure server
           command: |
-            cd ~/project/.circleci/ansible
-            ansible-playbook configure-server.yml --inventory-file=inventory.txt
-          no_output_timeout: 15m
-      - run:
-          name: Configure server
-          command: |
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+          no_output_timeout: 15m
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
