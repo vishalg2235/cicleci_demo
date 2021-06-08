@@ -412,16 +412,36 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            yum -y install jq tar gzip git curl
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure  
+            export OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)
+
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            
+            echo "${OldWorkflowID}"
+            echo "${STACKS[@]}"
+            
+            # save oldworkflowid for the cleanup phase to memstash
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request PUT --data "${OldWorkflowID}" \
+                https://api.memstash.io/values/oldworkflowid
+            
+            # promote on cloudfront
+            aws cloudformation update-stack \
+              --use-previous-template \
+              --stack-name cloudfront-${OldWorkflowID} \
+              --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   cleanup:
       docker:
