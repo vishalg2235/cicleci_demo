@@ -208,10 +208,13 @@ jobs:
               --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
 
-            export BACKEND_URL=$(aws cloudformation describe-stacks \
-              --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
-              --query "Stacks[0].Outputs[?OutputKey=='BackendURL'].OutputValue" \
-              --no-paginate --output text)
+            export BACKEND_URL=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --query "Reservations[*].Instances[*].[PublicDnsName]" \
+              --output text | tr -d '\n'`
+            
+            echo $BACKEND_URL >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
 
             echo $BACKEND_URL
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
