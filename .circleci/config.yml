@@ -325,8 +325,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            exit 1
-            yum install -y curl tar sudo
+            yum install -y curl tar sudo jq
             curl -sL https://rpm.nodesource.com/setup_13.x | sudo bash -
             yum install -y nodejs
             node --version
@@ -346,6 +345,12 @@ jobs:
             npm i
             npm run build
             aws s3 cp dist s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
                     
@@ -355,8 +360,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints:
-            - "a0:f9:d1:7f:b7:8f:36:e8:8a:da:3f:03:1f:2c:e9:b1"
+          fingerprints: ["5b:ba:44:a5:4d:1d:4a:8c:86:ce:68:b2:03:a8:9e:82"] 
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
@@ -365,7 +369,7 @@ jobs:
           name: Install dependencies
           command: |
             apk update
-            apk add --update ansible aws-cli openssh-client tar
+            apk add --update ansible aws-cli openssh-client tar jq
       - run:
           name: compress backend
           command: |
@@ -376,6 +380,12 @@ jobs:
             cd .circleci/ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -389,7 +399,7 @@ jobs:
           command: |
             sudo apt update
             sudo apt install -y awscli
-            sudo apt install -y python3 ansible
+            sudo apt install -y python3 ansible jq
       - run:
           name: Get backend url
           command: |
@@ -400,7 +410,7 @@ jobs:
           name: Backend smoke test.
           command: |
             url=$(cat backend-url.txt)
-            url="http://${url}:3030/api/status"
+            url="http://${url}:3030/api/statusABC"
             curl $url | grep "\"status\":\"ok\""
       - run:
           name: Frontend smoke test.
@@ -411,6 +421,12 @@ jobs:
             else
               return 0
             fi
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
