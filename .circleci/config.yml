@@ -284,9 +284,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            exit 1
             sudo apt update
-            sudo apt install -y awscli
+            sudo apt install -y awscli jq
       - run:
           name: Run migrations
           command: |
@@ -311,6 +310,12 @@ jobs:
           root: ~/project
           paths:
             - backend
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -322,6 +327,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            exit 1
             yum install -y curl tar sudo
             curl -sL https://rpm.nodesource.com/setup_13.x | sudo bash -
             yum install -y nodejs
