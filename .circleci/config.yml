@@ -369,7 +369,7 @@ jobs:
           name: Install dependencies
           command: |
             apk update
-            apk add --update ansible aws-cli openssh-client tar jq
+            apk add --update ansible aws-cli openssh-client tar jq curl sudo
       - run:
           name: compress backend
           command: |
