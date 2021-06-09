@@ -294,6 +294,13 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+
+            echo "$(cat backend.env)"
+            echo $TYPEORM_DATABASE
+            echo $TYPEORM_USERNAME
+            echo $TYPEORM_PASSWORD
+            echo $TYPEORM_HOST
+            echo $TYPEORM_PORT
       - run:
           name: Install dependencies
           command: |
