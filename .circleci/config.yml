@@ -208,7 +208,7 @@ jobs:
               --stack-name backend-"${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
 
-            export BACKEND_URL=$(aws ec2 describe-instances \
+            export BACKEND_URL=$`aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
               --query "Reservations[*].Instances[*].[PublicDnsName]" \
               --output text | tr -d '\n'`
