@@ -480,9 +480,9 @@ jobs:
       steps:
         - checkout
         - run:
-          name: Install dependencies
-          command: |
-            yum -y install jq
+            name: Install dependencies
+            command: |
+              yum -y install jq
         - run:
             name: Remove old stacks and files
             command: |
