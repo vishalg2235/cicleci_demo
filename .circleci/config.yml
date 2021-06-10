@@ -456,12 +456,10 @@ jobs:
             echo "${OldWorkflowID}"
             echo "${STACKS[@]}"
             
-            # save oldworkflowid for the cleanup phase to memstash
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
               --request PUT --data "${OldWorkflowID}" \
                 https://api.memstash.io/values/oldworkflowid
             
-            # promote on cloudfront
             aws cloudformation update-stack \
               --use-previous-template \
               --stack-name cloudfront-${OldWorkflowID} \
@@ -472,8 +470,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      #- destroy-environment:
-      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   cleanup:
       docker:
@@ -502,6 +500,8 @@ jobs:
         - slack/notify:
             event: fail
             template: basic_fail_1
+        - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID}"
               
 workflows:
   default:
