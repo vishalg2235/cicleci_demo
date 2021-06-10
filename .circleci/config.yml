@@ -364,7 +364,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
-          at: at: /tmp/artifacts
+          at: /tmp/artifacts
       - run:
           name: Install dependencies
           command: |
