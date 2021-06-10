@@ -411,6 +411,7 @@ jobs:
           command: |
             url=$(cat backend-url.txt)
             url="http://${url}:3030/api/status"
+            echo $url
             curl $url | grep "\"status\":\"ok\""
       - run:
           name: Frontend smoke test.
@@ -427,8 +428,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      #- destroy-environment:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   cloudfront-update:
     docker:
