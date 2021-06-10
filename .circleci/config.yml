@@ -465,7 +465,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
               --stack-name cloudfront-${OldWorkflowID} \
-              --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
+              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
