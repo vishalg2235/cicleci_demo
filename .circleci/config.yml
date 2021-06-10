@@ -421,9 +421,9 @@ jobs:
             echo Frontend_URL: ${URL}
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 0
-            else
               exit 1
+            else
+              exit 0
             fi
       - slack/notify:
           event: pass
@@ -462,11 +462,10 @@ jobs:
                 https://api.memstash.io/values/oldworkflowid
             
             # promote on cloudfront
-            aws cloudformation deploy \
-              --template-file .circleci/files/cloudfront.yml \
-              --tags project=udapeople \
-              --stack-name udapeople-cloudfront \
-              --parameter-overrides WorkflowID=${CIRCLE_WORKFLOW_ID}
+            aws cloudformation update-stack \
+              --use-previous-template \
+              --stack-name cloudfront-${OldWorkflowID} \
+              --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
