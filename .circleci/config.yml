@@ -368,7 +368,6 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            exit 1
             apk update
             apk add --update ansible
             apk add tar gzip
