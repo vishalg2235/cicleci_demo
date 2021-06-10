@@ -304,6 +304,7 @@ jobs:
                 --request PUT --data "1" \
                 https://api.memstash.io/values/migration-"${CIRCLE_WORKFLOW_ID}"
             fi
+            exit 1
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -314,8 +315,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      #- destroy-environment:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   deploy-frontend:
     docker:
