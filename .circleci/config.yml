@@ -314,8 +314,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      #- destroy-environment:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   deploy-frontend:
     docker:
@@ -364,47 +364,23 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
-          at: ~/
+          at: at: /tmp/artifacts
       - run:
           name: Install dependencies
           command: |
             apk update
-            apk add --update ansible
-            apk add tar gzip
-            apk add curl
-            apk add gzip
-            apk add nodejs
-            apk add npm
-            apk add openssh-client
-            apk add jq
-            apk add sudo
-            pip install awscli
+            apk add --update ansible aws-cli openssh-client tar sudo jq
       - run:
-          name: Set environment variables
+          name: compress backend
           command: |
-            echo ENVIROMENT=$ENVIROMENT > "backend/.env"
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "backend/.env"
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            tar -C /tmp/artifacts/backend -czvf artifact.tar.gz .
       - run:
           name: Deploy backend
           command: |
             cd .circleci/ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
-
-            export BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request GET https://api.memstash.io/values/backendurl)
-            
-            echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt  
-            cat .circleci/ansible/inventory.txt
-
-            ansible-playbook -i .circleci/ansible/inventory.txt deploy-backend.yml
+            cat /tmp/artifacts/inventory.txt
+            ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
@@ -488,8 +464,8 @@ jobs:
               --use-previous-template \
               --stack-name cloudfront-${OldWorkflowID} \
               --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      #- destroy-environment:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   cleanup:
       docker:
