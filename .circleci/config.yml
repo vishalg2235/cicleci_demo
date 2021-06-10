@@ -480,9 +480,9 @@ jobs:
       steps:
         - checkout
         - run:
-          name: Install dependencies
-          command: |
-            yum -y install jq
+            name: Install dependencies
+            command: |
+              yum -y install jq
         - run:
             name: Remove old stacks and files
             command: |
@@ -496,8 +496,8 @@ jobs:
                 aws cloudformation delete-stack --stack-name cloudfront-"${OldWorkflowID}"
               fi
         - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
+            event: pass
+            template: success_tagged_deploy_1
         - slack/notify:
             event: fail
             template: basic_fail_1
