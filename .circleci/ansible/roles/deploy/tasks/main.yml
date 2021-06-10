@@ -1,17 +1,66 @@
 ---
-- name: copy dist backend folder to ec2 server
-  become: yes
-  copy:
-    src: ~/project/artifact.tar.gz
-    dest: /home/ubuntu/artifact.tar.gz
+- name: "install dependencies."
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
 
-- name: prepare binaries
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: remove dependencies that are no longer required
+  become: yes
+  apt:
+    autoremove: yes
+
+- name: "install pm2"
   become: true
-  shell: |
-    cd /home/ubuntu
-    tar xvzf artifact.tar.gz -C .
-- name: start server
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: Create directory
+  file:
+    path: /home/ubuntu/backend
+    state: directory
+
+- name: Copy backend files to home server
+  copy:
+    src: /root/project/backend
+    dest: /home/ubuntu/
+
+- name: Copy backend files to root server
   become: true
+  copy:
+    src: /root/project/backend
+    dest: /root
+    force: no
+
+- name: Install Node 
   shell: |
-    cd /home/ubuntu
-    sudo pm2 start npm --name backend -- start
+    cd /home/ubuntu/backend
+    npm install
+    npm install --only=dev
+
+- name: Build package
+  shell: |
+    cd /home/ubuntu/backend
+    npm run build
+    cat .env
+    npm run prestart:prod
+
+- name: Start PM2
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 start npm --no-automation --name "backend" -- run start
+
+- name: start pm2 for dist/main.js
+  become: no
+  shell: pm2 start main.js
+  args:
+    chdir: /home/ubuntu/backend/dist

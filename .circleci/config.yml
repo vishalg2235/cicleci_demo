@@ -364,22 +364,41 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
-          at: /tmp/artifacts
+          at: ~/
       - run:
           name: Install dependencies
           command: |
             apk update
-            apk add --update ansible aws-cli openssh-client tar jq curl sudo
+            apk add --update ansible
+            apk add tar gzip
+            apk add curl
+            apk add gzip
+            apk add nodejs
+            apk add npm
+            apk add openssh-client
+            apk add jq
+            apk add sudo
+            pip install awscli
       - run:
-          name: compress backend
+          name: Set environment variables
           command: |
-            tar -C /tmp/artifacts/backend -czvf artifact.tar.gz .
+            echo ENVIROMENT=$ENVIROMENT > "backend/.env"
+            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "backend/.env"
+            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
       - run:
           name: Deploy backend
           command: |
             cd .circleci/ansible
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
+            BACKEND_IP=`cat inventory.txt | head -2 | tail -1`
+            echo "BACKEND_IP: ${BACKEND_IP}"
+            ansible-playbook -i inventory.txt deploy-backend.yml
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
