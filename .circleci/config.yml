@@ -397,8 +397,14 @@ jobs:
           command: |
             cd .circleci/ansible
             export ANSIBLE_HOST_KEY_CHECKING=False
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+
+            export BACKEND_URL=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request GET https://api.memstash.io/values/backendurl)
+            
+            echo "${BACKEND_URL}" >> .circleci/ansible/inventory.txt  
+            cat .circleci/ansible/inventory.txt
+
+            ansible-playbook -i .circleci/ansible/inventory.txt deploy-backend.yml
       - slack/notify:
           event: pass
           template: success_tagged_deploy_1
