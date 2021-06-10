@@ -472,8 +472,8 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID}"
+      #- destroy-environment:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
   cleanup:
       docker:
