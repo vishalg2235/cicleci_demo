@@ -253,7 +253,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["5b:ba:44:a5:4d:1d:4a:8c:86:ce:68:b2:03:a8:9e:82"]
+          fingerprints: ["98:06:b5:5d:8f:a7:c8:7b:39:0c:4b:4c:be:00:d1:65"]
       - attach_workspace:
           at: /tmp/.circleci/ansible
       - run:
@@ -360,7 +360,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["5b:ba:44:a5:4d:1d:4a:8c:86:ce:68:b2:03:a8:9e:82"] 
+          fingerprints: ["98:06:b5:5d:8f:a7:c8:7b:39:0c:4b:4c:be:00:d1:65"] 
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
@@ -417,7 +417,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-ap-south-1.amazonaws.com"
             echo Frontend_URL: ${URL}
             if curl -s ${URL} | grep "Welcome"
             then
