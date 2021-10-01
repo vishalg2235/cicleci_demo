@@ -32,8 +32,8 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: udapeople
-      ImageId: ami-09e67e426f25ce0d7 
+      KeyName: uda-ec2-keypair
+      ImageId: ami-0a23ccb2cdd9286bb
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
