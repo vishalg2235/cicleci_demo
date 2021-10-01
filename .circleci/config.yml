@@ -381,19 +381,17 @@ jobs:
                         --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
 
                       echo "${OldWorkflowID}"
-                      echo "${#OldWorkflowID}"
-                      echo "${OldWorkflowID:9:37}"
                       echo "vire"
                       echo "${STACKS[@]}"
                       echo "jire"
 
                       curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-                        --request PUT --data "${OldWorkflowID}" \
+                        --request PUT --data "${CIRCLE_WORKFLOW_ID}" \
                           https://api.memstash.io/values/oldworkflowid
 
                       aws cloudformation update-stack \
                         --use-previous-template \
-                        --stack-name cloudfront-${OldWorkflowID} \
+                        --stack-name cloudfront-${CIRCLE_WORKFLOW_ID} \
                         --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
             - destroy-environment:
                   workflow_id: "${CIRCLE_WORKFLOW_ID}"
