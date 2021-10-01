@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  slack: circleci/slack@4.4.2
-
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -56,12 +53,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 
   build-backend:
     docker:
@@ -79,12 +70,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 
   test-frontend:
     docker:
@@ -106,12 +91,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
                 
   test-backend:
     docker:
@@ -133,12 +112,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
             
   scan-frontend:
     docker:
@@ -160,12 +133,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 
   scan-backend:
     docker:
@@ -187,12 +154,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
 
   deploy-infrastructure:
     docker:
@@ -238,12 +199,6 @@ jobs:
           root: .circleci/ansible
           paths:
             - inventory.txt
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"     
 
@@ -265,12 +220,6 @@ jobs:
           command: |
             echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -308,12 +257,6 @@ jobs:
           root: ~/project
           paths:
             - backend
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -345,12 +288,6 @@ jobs:
             npm i
             npm run build
             aws s3 cp dist s3://udapeople-"${CIRCLE_WORKFLOW_ID}" --recursive
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
                     
@@ -381,12 +318,6 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False
             cat /tmp/artifacts/inventory.txt
             ansible-playbook -i /tmp/artifacts/inventory.txt deploy-backend.yml
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -425,12 +356,6 @@ jobs:
             else
               exit 1
             fi
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -464,12 +389,6 @@ jobs:
               --use-previous-template \
               --stack-name cloudfront-${OldWorkflowID} \
               --parameters ParameterKey=WorkflowID,ParameterValue=$CIRCLE_WORKFLOW_ID,UsePreviousValue=false
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID}"
 
@@ -494,12 +413,6 @@ jobs:
                 aws cloudformation delete-stack --stack-name backend-"${OldWorkflowID}"
                 aws cloudformation delete-stack --stack-name cloudfront-"${OldWorkflowID}"
               fi
-        - slack/notify:
-            event: pass
-            template: success_tagged_deploy_1
-        - slack/notify:
-            event: fail
-            template: basic_fail_1
         - destroy-environment:
             workflow_id: "${CIRCLE_WORKFLOW_ID}"
               
